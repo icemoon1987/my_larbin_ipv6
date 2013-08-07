@@ -67,12 +67,12 @@ void fetchDns () {
       break;
     }
     global::nbDnsCalls--;
-    printf("ans->cname: %s\n", ans->cname);
-    printf("ans->owner: %s\n", ans->owner);
+    //printf("ans->cname: %s\n", ans->cname);
+    //printf("ans->owner: %s\n", ans->owner);
     //printf("ans.addr: %s\n", inet_ntoa(ans->rrs.addr->addr.inet.sin_addr));
-    printf("before dnsAns\n");
+    //printf("before dnsAns\n");
     site->dnsAns(ans);
-    printf("after dnsAnds\n\n");
+    //printf("after dnsAnds\n\n");
     free(ans); // ans has been allocated with malloc
   }
 }
