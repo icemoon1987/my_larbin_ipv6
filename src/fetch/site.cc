@@ -207,15 +207,15 @@ void NamedSite::newQuery () {
  */
 void NamedSite::dnsAns (adns_answer *ans) {
   if (ans->status == adns_s_prohibitedcname) {
-    printf("ans->status == adns_s_prohibitedcname == %d\n", ans->status);
+    //printf("ans->status == adns_s_prohibitedcname == %d\n", ans->status);
     if (cname == NULL && ans->cname != NULL) {
       // try to find ip for cname of cname
-      printf("cname == NULL\n");
-      printf("ans->cname: %s\n", ans->cname);
-      printf("ans->owner: %s\n", ans->owner);
+      //printf("cname == NULL\n");
+      //printf("ans->cname: %s\n", ans->cname);
+      //printf("ans->owner: %s\n", ans->owner);
       //printf("ans.addr: %s\n", inet_ntoa(ans->rrs.addr->addr.inet.sin_addr));
       cname = newString(ans->cname);
-      printf("after cname = newString(ans->cname)\n");
+      //printf("after cname = newString(ans->cname)\n");
       global::nbDnsCalls++;
       adns_query quer = NULL;
       adns_submit(global::ads, cname,
@@ -226,23 +226,23 @@ void NamedSite::dnsAns (adns_answer *ans) {
       // dns chains too long => dns error
       // cf nslookup or host for more information
       siteSeen();
-      printf("cname != NULL\n");
+      //printf("cname != NULL\n");
       delete [] cname; cname = NULL;
       dnsState = errorDns;
       dnsErr();
     }
   } else {
-    printf(" ans->status: %d\n", ans->status);
+    //printf(" ans->status: %d\n", ans->status);
     siteSeen();
     if (cname != NULL) { delete [] cname; cname = NULL; }
     if (ans->status != adns_s_ok) {
       // No addr inet
-      printf("ans->status != adns_s_ok\n");
+      //printf("ans->status != adns_s_ok\n");
       dnsState = errorDns;
       dnsErr();
     } else {
       siteDNS();
-      printf("ans->status == adns_s_ok == %d\n", ans->status);
+      //printf("ans->status == adns_s_ok == %d\n", ans->status);
       // compute the new addr
       memcpy (&addr,
               &ans->rrs.addr->addr.inet.sin_addr,
