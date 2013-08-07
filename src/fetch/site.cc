@@ -26,21 +26,21 @@
 // functions used for the 2 types of sites
 /////////////////////////////////////////////////////////
 
-static struct sockaddr_in stataddr;
+static struct sockaddr_in6 stataddr;
 
 void initSite () {
-  stataddr.sin_family = AF_INET;
+  stataddr.sin6_family = AF_INET6;
 }
 
 /** connect to this addr using connection conn 
  * return the state of the socket
  */
-static char getFds (Connexion *conn, struct in_addr *addr, uint port) {
-  memcpy (&stataddr.sin_addr,
+static char getFds (Connexion *conn, struct in6_addr *addr, uint port) {
+  memcpy (&stataddr.sin6_addr,
           addr,
-          sizeof (struct in_addr));
-  stataddr.sin_port = htons(port);
-  int fd = socket(AF_INET, SOCK_STREAM, 0);
+          sizeof (struct in6_addr));
+  stataddr.sin6_port = htons(port);
+  int fd = socket(AF_INET6, SOCK_STREAM, 0);
   if (fd < 0)
     return emptyC;
   else
@@ -48,13 +48,13 @@ static char getFds (Connexion *conn, struct in_addr *addr, uint port) {
   conn->socket = fd;
   for (;;) {
     fcntl(fd, F_SETFL, O_NONBLOCK);
-    struct sockaddr_in *theaddr;
+    struct sockaddr_in6 *theaddr;
     if (global::proxyAddr != NULL)
       theaddr = global::proxyAddr;
     else
       theaddr = &stataddr;
     if (connect(fd, (struct sockaddr*) theaddr,
-                sizeof (struct sockaddr_in)) == 0) {
+                sizeof (struct sockaddr_in6)) == 0) {
       // success
       return writeC;
     } else if (errno == EINPROGRESS) {
@@ -181,7 +181,7 @@ void NamedSite::newQuery () {
   } else if (isdigit(name[0])) {
     // the name already in numbers-and-dots notation
 	siteSeen();
-	if (inet_aton(name, &addr)) {
+	if (inet_pton(AF_INET6, name, &addr)) {
 	  // Yes, it is in numbers-and-dots notation
 	  siteDNS();
 	  // Get the robots.txt
@@ -196,7 +196,7 @@ void NamedSite::newQuery () {
     global::nbDnsCalls++;
     adns_query quer = NULL;
     adns_submit(global::ads, name,
-                (adns_rrtype) adns_r_addr,
+                (adns_rrtype) adns_r_aaaa,
                 (adns_queryflags) 0,
                 this, &quer);
   }
@@ -207,46 +207,46 @@ void NamedSite::newQuery () {
  */
 void NamedSite::dnsAns (adns_answer *ans) {
   if (ans->status == adns_s_prohibitedcname) {
-    //printf("ans->status == adns_s_prohibitedcname == %d\n", ans->status);
+    printf("ans->status == adns_s_prohibitedcname == %d\n", ans->status);
     if (cname == NULL && ans->cname != NULL) {
       // try to find ip for cname of cname
-      //printf("cname == NULL\n");
-      //printf("ans->cname: %s\n", ans->cname);
-      //printf("ans->owner: %s\n", ans->owner);
-      //printf("ans.addr: %s\n", inet_ntoa(ans->rrs.addr->addr.inet.sin_addr));
+      printf("cname == NULL\n");
+      printf("ans->cname: %s\n", ans->cname);
+      printf("ans->owner: %s\n", ans->owner);
+      //printf("ans.addr: %s\n", inet_ntoa(ans->rrs.addr->addr.inet.sin6_addr));
       cname = newString(ans->cname);
-      //printf("after cname = newString(ans->cname)\n");
+      printf("after cname = newString(ans->cname)\n");
       global::nbDnsCalls++;
       adns_query quer = NULL;
       adns_submit(global::ads, cname,
-                  (adns_rrtype) adns_r_addr,
+                  (adns_rrtype) adns_r_aaaa,
                   (adns_queryflags) 0,
                   this, &quer);
     } else {
       // dns chains too long => dns error
       // cf nslookup or host for more information
       siteSeen();
-      //printf("cname != NULL\n");
+      printf("cname != NULL\n");
       delete [] cname; cname = NULL;
       dnsState = errorDns;
       dnsErr();
     }
   } else {
-    //printf(" ans->status: %d\n", ans->status);
+    printf(" ans->status: %d\n", ans->status);
     siteSeen();
     if (cname != NULL) { delete [] cname; cname = NULL; }
     if (ans->status != adns_s_ok) {
       // No addr inet
-      //printf("ans->status != adns_s_ok\n");
+      printf("ans->status != adns_s_ok\n");
       dnsState = errorDns;
       dnsErr();
     } else {
       siteDNS();
-      //printf("ans->status == adns_s_ok == %d\n", ans->status);
+      printf("ans->status == adns_s_ok == %d\n", ans->status);
       // compute the new addr
       memcpy (&addr,
-              &ans->rrs.addr->addr.inet.sin_addr,
-              sizeof (struct in_addr));
+              &ans->rrs.addr->addr.inet6.sin6_addr,
+              sizeof (struct in6_addr));
       // Get the robots.txt
       dnsOK();
     }
@@ -355,7 +355,7 @@ void NamedSite::robotsResult (FetchError res) {
     if (global::proxyAddr == NULL) {
       ipHash=0;
       char *s = (char *) &addr;
-      for (uint i=0; i<sizeof(struct in_addr); i++) {
+      for (uint i=0; i<sizeof(struct in6_addr); i++) {
         ipHash = ipHash*31 + s[i];
       }
     } else {
@@ -396,7 +396,7 @@ void NamedSite::robotsResult (FetchError res) {
 void NamedSite::transfer (url *u) {
   if (testRobots(u->getFile())) {
     if (global::proxyAddr == NULL) {
-      memcpy (&u->addr, &addr, sizeof (struct in_addr));
+      memcpy (&u->addr, &addr, sizeof (struct in6_addr));
     }
     global::IPSiteList[ipHash].putUrl(u);
   } else {

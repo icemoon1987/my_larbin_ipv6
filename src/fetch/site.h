@@ -96,7 +96,7 @@ class NamedSite {
   bool isInFifo;
   /** internet addr of this server */
   char dnsState;
-  struct in_addr addr;
+  struct in6_addr addr;
   uint ipHash;
   /* Date of expiration of dns call and robots.txt fetch */
   time_t dnsTimeout;
