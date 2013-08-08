@@ -193,12 +193,13 @@ void NamedSite::newQuery () {
 	}
   } else {
     // submit an adns query
+    printf("in newQuery. Name: %s\n",name);
     global::nbDnsCalls++;
     adns_query quer = NULL;
     adns_submit(global::ads, name,
                 (adns_rrtype) adns_r_aaaa,
                 (adns_queryflags) 0,
-                this, &quer);
+                NULL, &quer);
   }
 }
 
@@ -232,25 +233,34 @@ void NamedSite::dnsAns (adns_answer *ans) {
       dnsErr();
     }
   } else {
-    printf(" ans->status: %d\n", ans->status);
-    siteSeen();
-    if (cname != NULL) { delete [] cname; cname = NULL; }
+    printf("in dnsAns and ans->status is not eque to adns_s_prohibitedcname\n");
     if (ans->status != adns_s_ok) {
-      // No addr inet
-      printf("ans->status != adns_s_ok\n");
-      dnsState = errorDns;
-      dnsErr();
+    // No addr inet
+        printf("ans->status != adns_s_ok\n");
+        dnsState = errorDns;
+        dnsErr();
     } else {
-      siteDNS();
-      printf("ans->status == adns_s_ok == %d\n", ans->status);
-      // compute the new addr
-      memcpy (&addr,
-              &ans->rrs.addr->addr.inet6.sin6_addr,
-              sizeof (struct in6_addr));
-      // Get the robots.txt
-      dnsOK();
+        siteDNS();
+        char buf[INET6_ADDRSTRLEN] = "";
+        printf("ans->status == adns_s_ok == %d\n", ans->status);
+        printf("ans->cname: %s\n", ans->cname);
+        printf("ans->owner: %s\n", ans->owner);
+        // compute the new addr
+        inet_ntop(AF_INET6, ans->rrs.in6addr, buf, INET6_ADDRSTRLEN);
+        printf("ans->rrs.in6addr ip: %s\n", buf);
+        printf("hello\n");
+        printf("sizeof(struct in6_addr): %ld\n", sizeof(struct in6_addr));
+        printf("INET6_ADDRSTRLEN: %ld\n", INET6_ADDRSTRLEN);
+        memcpy (&addr, ans->rrs.in6addr, sizeof (struct in6_addr));
+        memset(buf, '0', sizeof(buf));
+        printf("buf: %s\n", buf);
+        inet_ntop(AF_INET6, addr.s6_addr, buf, sizeof(buf));
+        printf("addr.s6_addr: %s\n", buf);
+        printf("after memcpy in dnsAns\n");
+     }
     }
-  }
+    // Get the robots.txt
+    dnsOK();
 }
 
 /** we've got a good dns answer
