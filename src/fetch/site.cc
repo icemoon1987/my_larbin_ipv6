@@ -169,6 +169,17 @@ void NamedSite::putGenericUrl(url *u, int limit, bool prio) {
 /** Init a new dns query
  */
 void NamedSite::newQuery () {
+  // test if addr is readable
+  /*
+  char first_buf[INET6_ADDRSTRLEN];
+  //in6_addr addr1;
+  memset(first_buf, '1', INET6_ADDRSTRLEN);
+  printf("in newQuery, first_buf: %s\n", first_buf);
+  inet_ntop(AF_INET6, addr.s6_addr, first_buf, sizeof(first_buf));
+  printf("first_buf now: %s\n", first_buf);
+  */
+
+
   // Update our stats
   newId();
   if (global::proxyAddr != NULL) {
@@ -181,7 +192,7 @@ void NamedSite::newQuery () {
   } else if (isdigit(name[0])) {
     // the name already in numbers-and-dots notation
 	siteSeen();
-	if (inet_pton(AF_INET6, name, &addr)) {
+	if (inet_pton(AF_INET6, name, &addr.s6_addr)) {
 	  // Yes, it is in numbers-and-dots notation
 	  siteDNS();
 	  // Get the robots.txt
@@ -199,7 +210,16 @@ void NamedSite::newQuery () {
     adns_submit(global::ads, name,
                 (adns_rrtype) adns_r_aaaa,
                 (adns_queryflags) 0,
-                NULL, &quer);
+                  NULL, &quer);
+    printf("in newQuery()\n");
+    // test if addr is readable
+  
+    char first_buf[INET6_ADDRSTRLEN];
+    //in6_addr addr1;
+    memset(first_buf, '1', INET6_ADDRSTRLEN);
+    printf("in newQuery, first_buf: %s\n", first_buf);
+    inet_ntop(AF_INET6, addr.s6_addr, first_buf, sizeof(first_buf));
+    printf("first_buf now: %s\n", first_buf);
   }
 }
 
@@ -207,6 +227,17 @@ void NamedSite::newQuery () {
  * assert there is a freeConn
  */
 void NamedSite::dnsAns (adns_answer *ans) {
+  /*
+  // test if addr is readable
+  // the result: segementation fault 
+  char first_buf[INET6_ADDRSTRLEN];
+  //in6_addr addr1;
+  memset(first_buf, '1', INET6_ADDRSTRLEN);
+  printf("in dnsAns, first_buf: %s\n", first_buf);
+  inet_ntop(AF_INET6, addr.s6_addr, first_buf, sizeof(first_buf));
+  printf("first_buf now: %s\n", first_buf);
+  */
+
   if (ans->status == adns_s_prohibitedcname) {
     printf("ans->status == adns_s_prohibitedcname == %d\n", ans->status);
     if (cname == NULL && ans->cname != NULL) {
@@ -251,11 +282,15 @@ void NamedSite::dnsAns (adns_answer *ans) {
         printf("hello\n");
         printf("sizeof(struct in6_addr): %ld\n", sizeof(struct in6_addr));
         printf("INET6_ADDRSTRLEN: %ld\n", INET6_ADDRSTRLEN);
-        memcpy (&addr, ans->rrs.in6addr, sizeof (struct in6_addr));
+
+        //struct in6_addr addr1;
+        //memcpy(&addr1, ans->rrs.in6addr, sizeof(struct in6_addr));
+        
+        //memcpy(&addr, ans->rrs.in6addr, sizeof(struct in6_addr));
         memset(buf, '0', sizeof(buf));
         printf("buf: %s\n", buf);
         inet_ntop(AF_INET6, addr.s6_addr, buf, sizeof(buf));
-        printf("addr.s6_addr: %s\n", buf);
+        printf("addr1.s6_addr: %s\n", buf);
         printf("after memcpy in dnsAns\n");
      }
     }

@@ -50,9 +50,17 @@ void fetchDns () {
     if (site == NULL) {
       break;
     } else {
-      //printf("before newQuery\n");
+      printf("before newQuery\n");
       site->newQuery();
-      //printf("after newQuery\n");
+      printf("after newQuery\n");
+
+      // to test whether addr is readable
+      // here site->addr.s6_addr is readable
+      char buf[INET6_ADDRSTRLEN];
+      memset(buf, '2', sizeof(buf));
+      printf("in fetchDns(), buf: %s\n", buf);
+      inet_ntop(AF_INET6, site->addr.s6_addr, buf, sizeof(buf));
+      printf("now buf: %s\n", buf);
     }
   }
 
@@ -61,18 +69,36 @@ void fetchDns () {
     NamedSite *site;
     adns_query quer = NULL;
     adns_answer *ans;
+    char buf[INET6_ADDRSTRLEN];
+
+    // to test whether addr is readable
+    // here site->addr.s6_addr is readable
+    memset(buf, '3', sizeof(buf));
+    printf("in fetchDns and before adns_check, buf: %s\n", buf);
+    inet_ntop(AF_INET6, site->addr.s6_addr, buf, sizeof(buf));
+    printf("now buf: %s\n", buf);
+
     int res = adns_check(global::ads, &quer, &ans, (void**)&site);
+
+    // to test whether addr is readable
+    // segmentation fault
+    memset(buf, '4', sizeof(buf));
+    printf("in fetchDns and after adns_check, buf: %s\n", buf);
+    inet_ntop(AF_INET6, site->addr.s6_addr, buf, sizeof(buf));
+    printf("now buf: %s\n", buf);
+
     if (res == ESRCH || res == EAGAIN) {
       // No more query or no more answers
       break;
     }
     global::nbDnsCalls--;
-    //printf("ans->cname: %s\n", ans->cname);
-    //printf("ans->owner: %s\n", ans->owner);
-    //printf("ans.addr: %s\n", inet_ntoa(ans->rrs.addr->addr.inet.sin_addr));
-    //printf("before dnsAns\n");
+    printf("in fetchDns(): ans->cname: %s\n", ans->cname);
+    printf("in fetchDns(): ans->owner: %s\n", ans->owner);
+    inet_ntop(AF_INET6, ans->rrs.in6addr, buf, INET6_ADDRSTRLEN);
+    printf("in fetchDns(): ans->rrs.in6addr: %s\n", buf);
+    printf("before dnsAns\n");
     site->dnsAns(ans);
-    //printf("after dnsAnds\n\n");
+    printf("after dnsAnds\n\n");
     free(ans); // ans has been allocated with malloc
   }
 }
