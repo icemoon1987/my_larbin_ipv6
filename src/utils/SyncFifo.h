@@ -76,6 +76,7 @@ template <class T>
 T *SyncFifo<T>::tryGet () {
   T *tmp = NULL;
   mypthread_mutex_lock(&lock);
+  printf("IN tryGet. in = %d, out= %d\n",in,out);
   if (in != out) {
 	// The stack is not empty
 	tmp = tab[out];

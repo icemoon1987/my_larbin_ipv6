@@ -97,14 +97,14 @@ int main (int argc, char *argv[]) {
     stateMain(3);
     sequencer();
     stateMain(4);
-    //printf("before fetchDns()\n\n");
+    printf("before fetchDns()\n\n");
     fetchDns();
-    //printf("after fetchDns()\n\n");
+    printf("after fetchDns()\n\n");
     stateMain(5);
     fetchOpen();
+    printf("after fetchOpen()\n\n");
     stateMain(6);
     checkAll();
-    // select
     stateMain(count++);
     poll(global::pollfds, global::posPoll, 10);
     stateMain(7);

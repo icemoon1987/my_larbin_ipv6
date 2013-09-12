@@ -63,7 +63,7 @@ char *global::userAgent;
 char *global::sender;
 char *global::headers;
 char *global::headersRobots;
-sockaddr_in *global::proxyAddr;
+sockaddr_in6 *global::proxyAddr;
 Vector<char> *global::domains;
 Vector<char> global::forbExt;
 uint global::nb_conn;
@@ -248,20 +248,20 @@ void global::parseFile (char *file) {
 	  // host name and dns call
 	  tok = nextToken(&posParse);
 	  struct hostent* hp;
-	  proxyAddr = new sockaddr_in;
-	  memset((char *) proxyAddr, 0, sizeof (struct sockaddr_in));
+	  proxyAddr = new sockaddr_in6;
+	  memset((char *) proxyAddr, 0, sizeof (struct sockaddr_in6));
 	  if ((hp = gethostbyname(tok)) == NULL) {
 		endhostent();
 		cerr << "Unable to find proxy ip address (" << tok << ")\n";
 		exit(1);
 	  } else {
-		proxyAddr->sin_family = hp->h_addrtype;
-		memcpy ((char*) &proxyAddr->sin_addr, hp->h_addr, hp->h_length);
+		proxyAddr->sin6_family = hp->h_addrtype;
+		memcpy ((char*) &proxyAddr->sin6_addr, hp->h_addr, hp->h_length);
 	  }
 	  endhostent();
 	  // port number
 	  tok = nextToken(&posParse);
-	  proxyAddr->sin_port = htons(atoi(tok));
+	  proxyAddr->sin6_port = htons(atoi(tok));
 	} else if (!strcasecmp(tok, "pagesConnexions")) {
 	  tok = nextToken(&posParse);
 	  nb_conn = atoi(tok);

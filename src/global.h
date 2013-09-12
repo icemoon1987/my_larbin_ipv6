@@ -116,7 +116,7 @@ struct global {
   static char *headers;
   static char *headersRobots;  // used when asking a robots.txt
   /* internet address of the proxy (if any) */
-  static sockaddr_in *proxyAddr;
+  static sockaddr_in6 *proxyAddr;
   /** connect to this server through a proxy using connection conn 
    * return >0 in case of success (connecting or connected), 0 otherwise
    */

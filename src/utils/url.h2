@@ -47,7 +47,7 @@ class url {
   ~url ();
 
   /* inet addr (once calculated) */
-  struct in6_addr addr;
+  struct in_addr addr;
 
   /* Is it a valid url ? */
   bool isValid ();

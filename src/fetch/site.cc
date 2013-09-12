@@ -279,18 +279,18 @@ void NamedSite::dnsAns (adns_answer *ans) {
         // compute the new addr
         inet_ntop(AF_INET6, ans->rrs.in6addr, buf, INET6_ADDRSTRLEN);
         printf("ans->rrs.in6addr ip: %s\n", buf);
-        printf("hello\n");
-        printf("sizeof(struct in6_addr): %ld\n", sizeof(struct in6_addr));
-        printf("INET6_ADDRSTRLEN: %ld\n", INET6_ADDRSTRLEN);
+        
+        //printf("sizeof(struct in6_addr): %ld\n", sizeof(struct in6_addr));
+        //printf("INET6_ADDRSTRLEN: %ld\n", INET6_ADDRSTRLEN);
 
         //struct in6_addr addr1;
         //memcpy(&addr1, ans->rrs.in6addr, sizeof(struct in6_addr));
         
-        //memcpy(&addr, ans->rrs.in6addr, sizeof(struct in6_addr));
+        memcpy(&addr, ans->rrs.in6addr, sizeof(struct in6_addr));
         memset(buf, '0', sizeof(buf));
         printf("buf: %s\n", buf);
         inet_ntop(AF_INET6, addr.s6_addr, buf, sizeof(buf));
-        printf("addr1.s6_addr: %s\n", buf);
+        printf("addr.s6_addr: %s\n", buf);
         printf("after memcpy in dnsAns\n");
      }
     }
@@ -306,6 +306,7 @@ void NamedSite::dnsOK () {
   Connexion *conn = global::freeConns->get();
   char res = getFds(conn, &addr, port);
   if (res != emptyC) {
+    printf("in dnsOK and getFds is not emptyC\n");
     conn->timeout = timeoutPage;
     if (global::proxyAddr != NULL) {
       // use a proxy
@@ -326,6 +327,7 @@ void NamedSite::dnsOK () {
     conn->err = success;
     conn->state = res;
   } else {
+    printf("in dnsOK and getFds is emptyC\n");
     // Unable to get a socket
     global::freeConns->put(conn);
     dnsState = noConnDns;

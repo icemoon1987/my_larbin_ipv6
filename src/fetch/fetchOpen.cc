@@ -22,6 +22,7 @@
  * work inside the main thread
  */
 void fetchOpen () {
+  printf("in fetchOpen\n");
   static time_t next_call = 0;
   if (global::now < next_call) { // too early to come back
     return;
@@ -31,7 +32,9 @@ void fetchOpen () {
     IPSite *s = global::okSites->tryGet();
     if (s == NULL) {
       cont = 0;
+      printf("in fetchOpen and s == NULL the cont = %d\n", cont);
     } else {
+      printf("in fetchOpen and before next_call = s->fetch\n");
       next_call = s->fetch();
       cont = (next_call == 0);
     }
@@ -78,12 +81,14 @@ void fetchDns () {
     inet_ntop(AF_INET6, site->addr.s6_addr, buf, sizeof(buf));
     printf("now buf: %s\n", buf);
 
-    int res = adns_check(global::ads, &quer, &ans, (void**)&site);
+    //int res = adns_check(global::ads, &quer, &ans, (void**)&site);
+    int res = adns_check(global::ads, &quer, &ans, NULL);
 
     // to test whether addr is readable
     // segmentation fault
-    memset(buf, '4', sizeof(buf));
+    memset(buf, '0', sizeof(buf));
     printf("in fetchDns and after adns_check, buf: %s\n", buf);
+    memcpy(site->addr.s6_addr, buf, sizeof(buf));
     inet_ntop(AF_INET6, site->addr.s6_addr, buf, sizeof(buf));
     printf("now buf: %s\n", buf);
 
